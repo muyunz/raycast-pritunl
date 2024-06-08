@@ -5,6 +5,7 @@
   "description": "Everything you need to know to get started with Raycast for Teams",
   "icon": "icon.png",
   "author": "LouisBa",
+  "owner": "webapp",
   "categories": [
     "Developer Tools"
   ],
