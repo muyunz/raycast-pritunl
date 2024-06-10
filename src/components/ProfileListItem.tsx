@@ -1,25 +1,45 @@
 import { Profile } from "../types";
-import { Icon, List } from "@raycast/api";
+import { Color, Icon, Image, List } from "@raycast/api";
 import React, { useMemo } from "react";
 import { ProfileActions } from "./ProfileActions";
 import { truthy } from "../utils";
+import ImageLike = Image.ImageLike;
 
 type ProfileListItem = {
   profile: Profile;
-  activeProfile: Profile | null;
-  onConnect: (profile: Profile) => void;
   onDisconnect: (profile: Profile) => void;
+  onConnect: (profile: Profile) => void;
 };
 
-export const ProfileListItem: React.FunctionComponent<ProfileListItem> = ({ profile, activeProfile, onConnect, onDisconnect }) => {
+export const ProfileListItem: React.FunctionComponent<ProfileListItem> = ({
+  profile,
+  onConnect,
+  onDisconnect,
+}) => {
   const {
     id,
     name,
     client_address,
+    connected: isConnected,
+    run_state,
     status
   } = profile;
 
-  const isActivated = profile.id === activeProfile?.id;
+  const isActivated = run_state === "Active";
+  const isConnecting = status === "Connecting";
+
+  const icon = useMemo<ImageLike | undefined>(() => {
+    if(isConnecting) {
+      return { source: Icon.Circle, tintColor: Color.SecondaryText }
+    }
+
+    if(isConnected) {
+      return { source: Icon.FullSignal, tintColor: Color.Green }
+    }
+
+    return undefined;
+  }, [isConnected, isConnecting]);
+
   const accessories = useMemo(() => [
     isActivated && { text: status },
     isActivated && { text: client_address },
@@ -28,11 +48,16 @@ export const ProfileListItem: React.FunctionComponent<ProfileListItem> = ({ prof
   return (
     <List.Item
       id={id}
-      icon={isActivated ? Icon.CircleFilled : Icon.Circle}
+      icon={icon}
       key={id}
       title={name}
       accessories={accessories}
-      actions={<ProfileActions isActivated={isActivated} profile={profile} onConnect={onConnect} onDisconnect={onDisconnect} />}
+      actions={<ProfileActions
+        isActivated={isActivated}
+        profile={profile}
+        onDisconnect={onDisconnect}
+        onConnect={onConnect}
+      />}
     />
   )
 }
